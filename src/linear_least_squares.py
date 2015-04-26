@@ -29,15 +29,15 @@ def do_feature_vector(data):
         x.append([1.0] + list_of_floats)
     return x
 
-
 def classify(v):
+    classes = []
     for _ in v:
         if _[-1] == CLASS_1:
-            _[-1] = 1
+            classes.append(1)
         elif _[-1] == CLASS_n1:
-            _[-1] = -1
+            classes.append(-1)
         else:
-            _[-1] = 0
+            classes.append(0)
     return v
 
 if __name__ == '__main__':
