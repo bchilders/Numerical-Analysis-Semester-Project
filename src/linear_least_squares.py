@@ -10,8 +10,9 @@ NUMBER_OF_ATTRIBUTES = 4
 
 CLASS_1 = 'Iris-setosa'
 CLASS_n1 = 'Iris-versicolor'
+CLASS_NULL = 'Iris-virginica'
 
-TRAINING_SET = 20
+TRAINING_SET = 10
 
 dir = os.path.dirname(__file__)
 cfg_file = os.path.join(dir, '..', CONFIG_DIR, DATA_STORE)
@@ -21,15 +22,16 @@ def parse():
     with open(cfg_file, "r") as f:
         reader = csv.reader(f)
         for line in reader:
+            if list(line)[-1] == CLASS_NULL:
+                break
             data.append(list(line))
     return data
 
 # Create a matrix whose columns are vectors of features
 # an extra dimension is added to each feature vector by the addition of a 1.0
 def do_feature_vector(data):
-    global NUMBER_OF_INSTANCES
     x = []
-    for row in data[:NUMBER_OF_INSTANCES]:
+    for row in data[:]:
         list_of_floats = [float(_) for _ in row[:NUMBER_OF_ATTRIBUTES]]
         x.append([1.0] + list_of_floats)
     return x
@@ -59,7 +61,7 @@ def linear_least_squares(x, y):
         left_matrix_inv = np.linalg.inv(left_matrix)
     # If it fails, add a tiny identity matrix to make it invertible
     except np.linalg.LinAlgError:
-        left_matrix_inv = np.linalg.inv(left_matrix + 0.0001*np.identity(left_matrix.ndim()))
+        left_matrix_inv = np.linalg.inv(left_matrix + 0.0001*np.identity(left_matrix.shape[0]))
 
     right_matrix = np.sum(y[idx] * x_i for idx, x_i in enumerate(x))
 
@@ -93,18 +95,45 @@ def svmTransform(data):
         svmout.append([ysvm[idx]]+form_row)
     return svmout
 
+def train(data,num):
+    trainset = random.sample(data,num)
 
+    for _ in trainset:
+        data.remove(_)
+
+    y = classify(trainset)
+
+    x = rescale(do_feature_vector(trainset))
+    w = linear_least_squares(x, y)
+    return w
+
+def test(w,data):
+    x=rescale(do_feature_vector(data))
+    result = x*w
+    return result
 
 if __name__ == '__main__':
-    global NUMBER_OF_INSTANCES
     data = parse()
-    y = classify(data)
 
-    # If not all of the classes in the data set were used, this will update our global variable
-    NUMBER_OF_INSTANCES = y.__len__()
+    w = train(data,TRAINING_SET)
 
-    x = rescale(do_feature_vector(data))
-    w = linear_least_squares(x, y)
-    x_svm = svmTransform(data)
+#    print w
 
-    print x_svm
+    t = random.sample(data,80)
+
+    results = test(w,t)
+
+    for i,r in enumerate(results):
+        if r < 0 and t[i][-1] == CLASS_n1:
+            print "Good"
+        elif r > 0 and t[i][-1] == CLASS_1:
+            print "Good"
+        else:
+            print "Bad"
+
+    #print results
+
+    #x_svm = svmTransform(data)
+
+#    print x_svm
+
