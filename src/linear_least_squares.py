@@ -7,6 +7,9 @@ DATA_STORE = 'iris.data.txt'
 NUMBER_OF_ATTRIBUTES = 4
 NUMBER_OF_INSTANCES = 150
 
+CLASS_1 = 'Iris-setosa'
+CLASS_n1 = 'Iris-versicolor'
+
 dir = os.path.dirname(__file__)
 cfg_file = os.path.join(dir, '..', CONFIG_DIR, DATA_STORE)
 
@@ -26,7 +29,19 @@ def do_feature_vector(data):
         x.append([1.0] + list_of_floats)
     return x
 
+
+def classify(v):
+    for _ in v:
+        if _[-1] == CLASS_1:
+            _[-1] = 1
+        elif _[-1] == CLASS_n1:
+            _[-1] = -1
+        else:
+            _[-1] = 0
+    return v
+
 if __name__ == '__main__':
     data = parse()
     x = do_feature_vector(data)
     print x
+
