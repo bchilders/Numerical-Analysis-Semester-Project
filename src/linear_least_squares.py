@@ -1,6 +1,6 @@
 __author__ = 'patrickemami'
 
-import os, csv
+import os,csv,numpy as np
 
 CONFIG_DIR = 'config'
 DATA_STORE = 'iris.data.txt'
@@ -29,7 +29,7 @@ def do_feature_vector(data):
         x.append([1.0] + list_of_floats)
     return x
 
-def classify(v):
+def classify(v):#Assigns a value of -1 or 1 to each class
     classes = []
     for _ in v:
         if _[-1] == CLASS_1:
@@ -38,10 +38,37 @@ def classify(v):
             classes.append(-1)
         else:
             classes.append(0)
-    return v
+    return classes
+
+def rescale(mat):#Scales any n x m matrix to the range [-1 1] if all the values inside are floats
+    mat_rot = np.rot90(mat)
+    for idx,col in enumerate(mat_rot):
+        max = np.amax(col)
+        min = np.amin(col)
+        mat_rot[idx,:] = (col-min)/(max-min)*2-1
+    return np.rot90(mat_rot,3)
+
+def svmTransform(data):
+    svmout = []
+    y = classify(data)
+    ysvm = []
+    for _ in y:
+        if _ == -1:
+            ysvm.append('-1')
+        elif _ == 1:
+            ysvm.append('+1')
+    for row in data:
+        fil_row = row[:NUMBER_OF_ATTRIBUTES]
+        form_row = []
+        for idx,ent in enumerate(fil_row):
+            form_row.append(str(idx+1)+':'+ent)
+        svmout.append([ysvm[idx]]+form_row)
+    return svmout
+
+
+
 
 if __name__ == '__main__':
     data = parse()
-    x = do_feature_vector(data)
+    x = svmTransform(data)
     print x
-
