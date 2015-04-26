@@ -1,7 +1,8 @@
 __author__ = 'patrickemami'
 
-import os, csv
-import numpy as np
+
+import os,csv,numpy as np
+import random
 
 CONFIG_DIR = 'config'
 DATA_STORE = 'iris.data.txt'
@@ -9,6 +10,8 @@ NUMBER_OF_ATTRIBUTES = 4
 
 CLASS_1 = 'Iris-setosa'
 CLASS_n1 = 'Iris-versicolor'
+
+TRAINING_SET = 20
 
 dir = os.path.dirname(__file__)
 cfg_file = os.path.join(dir, '..', CONFIG_DIR, DATA_STORE)
@@ -25,15 +28,14 @@ def parse():
 # an extra dimension is added to each feature vector by the addition of a 1.0
 def do_feature_vector(data):
     global NUMBER_OF_INSTANCES
-
     x = []
     for row in data[:NUMBER_OF_INSTANCES]:
         list_of_floats = [float(_) for _ in row[:NUMBER_OF_ATTRIBUTES]]
         x.append([1.0] + list_of_floats)
     return x
 
-# Generate a vector of +1 or -1, depending on the provided class label
-def classify(v):
+
+def classify(v):#Assigns a value of -1 or 1 to each class
     classes = []
     not_used = []
     for _ in v:
@@ -63,6 +65,36 @@ def linear_least_squares(x, y):
 
     return left_matrix_inv * right_matrix.T
 
+def rescale(mat):#Scales any n x m matrix to the range [-1 1] if all the values inside are floats
+    mat_rot = np.rot90(mat)
+    for idx,col in enumerate(mat_rot):
+        max = np.amax(col)
+        min = np.amin(col)
+        if max != min:
+            mat_rot[idx,:] = (col-min)/(max-min)*2-1
+        else:
+            mat_rot[idx,:] = (col/max)
+    return np.rot90(mat_rot,3)
+
+def svmTransform(data):
+    svmout = []
+    y = classify(data)
+    ysvm = []
+    for _ in y:
+        if _ == -1:
+            ysvm.append('-1')
+        elif _ == 1:
+            ysvm.append('+1')
+    for row in data:
+        fil_row = row[:NUMBER_OF_ATTRIBUTES]
+        form_row = []
+        for idx,ent in enumerate(fil_row):
+            form_row.append(str(idx+1)+':'+ent)
+        svmout.append([ysvm[idx]]+form_row)
+    return svmout
+
+
+
 if __name__ == '__main__':
     global NUMBER_OF_INSTANCES
     data = parse()
@@ -71,6 +103,8 @@ if __name__ == '__main__':
     # If not all of the classes in the data set were used, this will update our global variable
     NUMBER_OF_INSTANCES = y.__len__()
 
-    x = do_feature_vector(data)
-
+    x = rescale(do_feature_vector(data))
     w = linear_least_squares(x, y)
+    x_svm = svmTransform(data)
+
+    print x_svm
