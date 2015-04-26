@@ -1,18 +1,20 @@
-__author__ = 'patrickemami'
+__author__ = 'patrickemami,tylorchilders'
 
 
 import os,csv,numpy as np
 import random
 
 CONFIG_DIR = 'config'
-DATA_STORE = 'iris.data.txt'
-NUMBER_OF_ATTRIBUTES = 4
+DATA_STORE = 'wine.data.txt'#'iris.data.txt'
+NUMBER_OF_ATTRIBUTES = 13#4
 
-CLASS_1 = 'Iris-setosa'
-CLASS_n1 = 'Iris-versicolor'
-CLASS_NULL = 'Iris-virginica'
+CLASS_1 = '1'#'Iris-setosa'
+CLASS_n1 = '2'#'Iris-versicolor'
+CLASS_NULL = '3'#'Iris-virginica'
 
-TRAINING_SET = 10
+CLASS_POS = 0#-1
+
+TRAINING_SET = 2
 
 dir = os.path.dirname(__file__)
 cfg_file = os.path.join(dir, '..', CONFIG_DIR, DATA_STORE)
@@ -22,7 +24,7 @@ def parse():
     with open(cfg_file, "r") as f:
         reader = csv.reader(f)
         for line in reader:
-            if list(line)[-1] == CLASS_NULL:
+            if list(line)[CLASS_POS] == CLASS_NULL:
                 break
             data.append(list(line))
     return data
@@ -41,9 +43,9 @@ def classify(v):#Assigns a value of -1 or 1 to each class
     classes = []
     not_used = []
     for _ in v:
-        if _[-1] == CLASS_1:
+        if _[CLASS_POS] == CLASS_1:
             classes.append(1)
-        elif _[-1] == CLASS_n1:
+        elif _[CLASS_POS] == CLASS_n1:
             classes.append(-1)
         else:
             not_used.append(0)
@@ -115,25 +117,22 @@ def test(w,data):
 if __name__ == '__main__':
     data = parse()
 
-    w = train(data,TRAINING_SET)
+    w = train(data,int(((TRAINING_SET/100.0)*data.__len__())))
 
-#    print w
-
-    t = random.sample(data,80)
+    t = random.sample(data,data.__len__())
 
     results = test(w,t)
 
+    p = 0
+
     for i,r in enumerate(results):
-        if r < 0 and t[i][-1] == CLASS_n1:
+        if r < 0 and t[i][CLASS_POS] == CLASS_n1:
             print "Good"
-        elif r > 0 and t[i][-1] == CLASS_1:
+            p = p+1.0
+        elif r > 0 and t[i][CLASS_POS] == CLASS_1:
             print "Good"
+            p = p+1.0
         else:
             print "Bad"
-
-    #print results
-
-    #x_svm = svmTransform(data)
-
-#    print x_svm
+    print p/data.__len__()*100.0
 
