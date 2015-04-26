@@ -45,7 +45,10 @@ def rescale(mat):#Scales any n x m matrix to the range [-1 1] if all the values 
     for idx,col in enumerate(mat_rot):
         max = np.amax(col)
         min = np.amin(col)
-        mat_rot[idx,:] = (col-min)/(max-min)*2-1
+        if max != min:
+            mat_rot[idx,:] = (col-min)/(max-min)*2-1
+        else:
+            mat_rot[idx,:] = (col/max)
     return np.rot90(mat_rot,3)
 
 def svmTransform(data):
