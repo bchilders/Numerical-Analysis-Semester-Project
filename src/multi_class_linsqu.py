@@ -9,12 +9,12 @@ DATA_STORE = 'wine.data.txt'#'iris.data.txt'
 NUMBER_OF_ATTRIBUTES = 13#4
 
 CLASS_1 = '1'#'Iris-setosa'
-CLASS_n1 = '2'#'Iris-versicolor'
-CLASS_NULL = '3'#'Iris-virginica'
+CLASS_2 = '2'#'Iris-versicolor'
+CLASS_3 = '3'#'Iris-virginica'
 
 CLASS_POS = 0#-1
 
-TRAINING_SET = 2
+TRAINING_SET = 30
 
 dir = os.path.dirname(__file__)
 cfg_file = os.path.join(dir, '..', CONFIG_DIR, DATA_STORE)
@@ -24,8 +24,6 @@ def parse():
     with open(cfg_file, "r") as f:
         reader = csv.reader(f)
         for line in reader:
-            if list(line)[CLASS_POS] == CLASS_NULL:
-                break
             data.append(list(line))
     return data
 
@@ -34,27 +32,26 @@ def parse():
 def do_feature_vector(data):
     x = []
     for row in data[:]:
-        list_of_floats = [float(_) for _ in row[:NUMBER_OF_ATTRIBUTES]]
+        list_of_floats = [float(_) for _ in row[CLASS_POS+1:CLASS_POS+1+NUMBER_OF_ATTRIBUTES]]
         x.append([1.0] + list_of_floats)
     return x
 
 
 def classify(v):#Assigns a value of -1 or 1 to each class
     classes = []
-    not_used = []
     for _ in v:
         if _[CLASS_POS] == CLASS_1:
-            classes.append(1)
-        elif _[CLASS_POS] == CLASS_n1:
-            classes.append(-1)
-        else:
-            not_used.append(0)
+            classes.append([1, 0, 0])
+        elif _[CLASS_POS] == CLASS_2:
+            classes.append([0, 1, 0])
+        elif _[CLASS_POS] == CLASS_3:
+            classes.append([0, 0, 1])
     return classes
 
 
 def linear_least_squares(x, y):
     x = np.asmatrix(x)
-    y = np.array(y)
+    y = np.matrix(y)
 
     left_matrix = np.sum((x_i.T * x_i for x_i in x), axis=0)
 
@@ -65,7 +62,10 @@ def linear_least_squares(x, y):
     except np.linalg.LinAlgError:
         left_matrix_inv = np.linalg.inv(left_matrix + 0.0001*np.identity(left_matrix.shape[0]))
 
-    right_matrix = np.sum(y[idx] * x_i for idx, x_i in enumerate(x))
+    right_matrix = np.asmatrix(np.zeros((3,14)))
+
+    for idx, x_i in enumerate(x):
+        right_matrix = right_matrix + np.asmatrix((y)[idx].T*x_i)
 
     return left_matrix_inv * right_matrix.T
 
@@ -125,11 +125,17 @@ if __name__ == '__main__':
 
     p = 0
 
+    #print results
+
     for i,r in enumerate(results):
-        if r < 0 and t[i][CLASS_POS] == CLASS_n1:
+        v = np.matrix.argmax(np.abs(r))
+        if v == 0 and t[i][CLASS_POS] == CLASS_1:
             print "Good"
             p = p+1.0
-        elif r > 0 and t[i][CLASS_POS] == CLASS_1:
+        elif v == 1 and t[i][CLASS_POS] == CLASS_2:
+            print "Good"
+            p = p+1.0
+        elif v == 2 and t[i][CLASS_POS] == CLASS_3:
             print "Good"
             p = p+1.0
         else:
