@@ -5,16 +5,17 @@ import os,csv,numpy as np
 import random
 
 CONFIG_DIR = 'config'
-DATA_STORE = 'wine.data.txt'#'iris.data.txt'
-NUMBER_OF_ATTRIBUTES = 13#4
+DATA_STORE = 'iris.data.txt'#'wine.data.txt'
+NUMBER_OF_ATTRIBUTES = 4#13
+NUMBER_OF_CLASSES = 3
 
-CLASS_1 = '1'#'Iris-setosa'
-CLASS_2 = '2'#'Iris-versicolor'
-CLASS_3 = '3'#'Iris-virginica'
+CLASS_1 = 'Iris-setosa'#'1'
+CLASS_2 = 'Iris-versicolor'#'2'
+CLASS_3 = 'Iris-virginica'#'3'
 
-CLASS_POS = 0#-1
+CLASS_POS = -1#0
 
-TRAINING_SET = 30
+TRAINING_SET_PERCENT = 30
 
 dir = os.path.dirname(__file__)
 cfg_file = os.path.join(dir, '..', CONFIG_DIR, DATA_STORE)
@@ -62,7 +63,7 @@ def linear_least_squares(x, y):
     except np.linalg.LinAlgError:
         left_matrix_inv = np.linalg.inv(left_matrix + 0.0001*np.identity(left_matrix.shape[0]))
 
-    right_matrix = np.asmatrix(np.zeros((3,14)))
+    right_matrix = np.asmatrix(np.zeros((NUMBER_OF_CLASSES,NUMBER_OF_ATTRIBUTES+1)))
 
     for idx, x_i in enumerate(x):
         right_matrix = right_matrix + np.asmatrix((y)[idx].T*x_i)
@@ -117,7 +118,7 @@ def test(w,data):
 if __name__ == '__main__':
     data = parse()
 
-    w = train(data,int(((TRAINING_SET/100.0)*data.__len__())))
+    w = train(data,int(((TRAINING_SET_PERCENT/100.0)*data.__len__())))
 
     t = random.sample(data,data.__len__())
 
