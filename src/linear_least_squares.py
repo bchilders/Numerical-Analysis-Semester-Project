@@ -1,7 +1,7 @@
 __author__ = 'patrickemami,tylorchilders'
 
 
-import os,csv,numpy as np
+import sys,os,csv,numpy as np
 import random
 
 CONFIG_DIR = 'config'
@@ -114,25 +114,36 @@ def test(w,data):
     result = x*w
     return result
 
+def main(loops):
+    loop = loops
+    if loop < 1:
+        loop = 1
+
+    while loop > 0:
+        data = parse()
+
+        w = train(data,int(((TRAINING_SET/100.0)*data.__len__())))
+
+        t = random.sample(data,data.__len__())
+
+        results = test(w,t)
+
+        p = 0
+
+        for i,r in enumerate(results):
+            if r < 0 and t[i][CLASS_POS] == CLASS_n1:
+                #print "Good"
+                p = p+1.0
+            elif r > 0 and t[i][CLASS_POS] == CLASS_1:
+                #print "Good"
+                p = p+1.0
+            #else:
+                #print "Bad"
+        sys.stdout.write((str)(p/data.__len__()*100.0))
+        loop = loop - 1
+
+        if loop > 0:
+            sys.stdout.write(",")
+
 if __name__ == '__main__':
-    data = parse()
-
-    w = train(data,int(((TRAINING_SET/100.0)*data.__len__())))
-
-    t = random.sample(data,data.__len__())
-
-    results = test(w,t)
-
-    p = 0
-
-    for i,r in enumerate(results):
-        if r < 0 and t[i][CLASS_POS] == CLASS_n1:
-            print "Good"
-            p = p+1.0
-        elif r > 0 and t[i][CLASS_POS] == CLASS_1:
-            print "Good"
-            p = p+1.0
-        else:
-            print "Bad"
-    print p/data.__len__()*100.0
-
+    main(sys.argv)
